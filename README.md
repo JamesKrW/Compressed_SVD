@@ -2,7 +2,7 @@
 TO DO:  
   - [ ]Build Dataset: Mnist and Cifar10  
   - [x]Implement MLP with Numpy  
-  - [ ]Implement Truncated SVD algorithm Numpy  
+  - [x]Implement Truncated SVD algorithm Numpy  
   - [ ]Implement K-SVD with Numpy  
   - [ ]Train MLP  
   - [ ]Compress MLP with Truncated SVD(Try different K), recover each layer: W=W_k  
