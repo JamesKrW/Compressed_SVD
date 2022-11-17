@@ -19,7 +19,11 @@ class MLP:
         for i in range(1, len(size)):
             self.weights.append(np.random.normal(0, 0.01, (size[i-1], size[i])))
             self.bias.append(np.random.normal(0, 0.01, (1, size[i])))
-
+            
+    def reover(weights,bias):
+        self.weights=weights
+        self.bias=bias
+    
     def __call__(self, X, Y):
         self.target = Y
 
