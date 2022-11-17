@@ -1,5 +1,6 @@
 # Compressed_SVD
 TO DO:
+
   Build Dataset: Mnist and Cifar10  
   Implement MLP with Numpy  
   Implement Truncated SVD algorithm Numpy  
