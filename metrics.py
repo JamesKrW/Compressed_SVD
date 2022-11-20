@@ -2,6 +2,9 @@ import sys
 import uuid
 import pickle
 from pathlib import Path
+from functools import wraps
+import time
+from datetime import datetime
 
 
 def get_mem_size(obj, seen=None):
@@ -46,9 +49,30 @@ def get_persisted_size_kb(obj):
     return get_persisted_size(obj) / 1024
 
 
+def timing(func):
+    """Calculate the execute time of the given func"""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.perf_counter()
+        st = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"'{func.__name__}()' starts at {st}")
+        result = func(*args, **kwargs)
+        end = time.perf_counter()
+        ed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        tot_time = end - start
+        tot_time = float(f"{tot_time:.4f}")
+        print(f"'{func.__name__}()' ends at {ed} and takes {tot_time} seconds.")
+        func.tot_time = tot_time  # add new variable to func
+        return result, tot_time
+
+    return wrapper
+
+
 __all__ = [
     "get_mem_size",
     "get_mem_size_kb",
     "get_persisted_size",
     "get_persisted_size_kb",
+    "timing",
 ]
