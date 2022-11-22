@@ -47,7 +47,7 @@ def main(args):
     )
     print()
 
-    model.compress_mlp(k=4, double_layer=True)
+    model.compress_mlp(k=5, double_layer=True)
     with metrics.Benchmark("Validation After Compression"):
         test_accuracy = model.validate(test_set[0], test_set[1])
     print("==== AFTER COMPRESSION ====")
@@ -63,12 +63,13 @@ def main(args):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--batch_size", default=32, type=int)
-parser.add_argument("--epochs", default=30, type=int)
+parser.add_argument("--epochs", default=60, type=int)
 parser.add_argument("--data_path", default="./data/mnist.pkl.gz")
-parser.add_argument("--model_shape", default=[784, 40, 40, 10], type=list)
+parser.add_argument("--model_shape", default=[784, 20, 20, 20, 10], type=list)
 parser.add_argument("--learning_rate", default=0.01, type=float)
-parser.add_argument("--l2_lambda", default=0.2, type=float)
+parser.add_argument("--l2_lambda", default=0.00, type=float)
 args = parser.parse_args()
 
-
+# trainable arguments:shape=[784, 300, 150,75,10],lr=0.01
+# trainable arguments:shape=[784, 20, 20,20,10],lr=0.01
 main(args)

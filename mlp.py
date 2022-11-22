@@ -43,13 +43,14 @@ class MLP:
         cross_entropy_loss = -np.sum(Y * np.log(self.a[-1])) / len(Y)
 
         sum_square = 0.0
-
         for w in self.weights:
             sum_square += np.sum(np.square(w))
-
         l2_loss = sum_square * self.l2_lambda / (2 * len(Y))
 
         return cross_entropy_loss + l2_loss
+
+    def _weight_decay(self, w, n: int):
+        return w * (1 - (self.l2_lambda * self.lr / n))
 
     def __call__(self, X, Y):
         self.target = Y
@@ -77,8 +78,11 @@ class MLP:
             )  # * self.a[i] * (1.0 - self.a[i])
 
         # update trained parameters
-        for i in range(len(self.weights)):
-            self.weights[i] -= self.lr * W_grad[i]
+        n = len(self.weights)
+        for i in range(n):
+            self.weights[i] = self._weight_decay(self.weights[i], n) - (
+                self.lr * W_grad[i]
+            )
             self.bias[i] -= self.lr * b_grad[i]
 
         return self
@@ -118,18 +122,19 @@ class MLP:
         return self
 
     def truncated_svd(self, W, k: int):
-        U, sigma, V = np.linalg.svd(W, full_matrices=True, compute_uv=True)
-        Sigma = np.zeros_like(W)
-
+        U, sigma, V = np.linalg.svd(W, full_matrices=1, compute_uv=1)
+        Sigma = np.zeros((k, k))
         for i in range(k):
             if len(sigma) > k:
                 Sigma[i][i] = sigma[i]
 
+        U = U[:, :k]
+        V = V[:k, :]
         W = U @ Sigma @ V
         U = U @ Sigma
         return W, U, V
 
-    def compress_mlp(self, k: int, double_layer: bool = False):
+    def compress_mlp(self, k, double_layer=False):
         weights = []
         bias = []
 

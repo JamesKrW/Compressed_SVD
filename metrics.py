@@ -27,9 +27,9 @@ def get_mem_size(obj, seen=None):
     return size
 
 
-def get_mem_size_kb(obj):
+def get_mem_size_kb(obj, seen=None):
     """Recursively finds size of objects (in KB)"""
-    return get_mem_size(obj) / 1024
+    return get_mem_size(obj, seen) / 1024
 
 
 def get_persisted_size(obj):

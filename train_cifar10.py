@@ -45,7 +45,7 @@ def main(args):
         f"Persisted size before compression: {metrics.get_persisted_size_kb(model)} KB"
     )
 
-    model.compress_mlp(5, True)
+    model.compress_mlp(k=5, double_layer=True)
     with metrics.Benchmark("Validation After Compression"):
         test_accuracy = model.validate(test_set[0], test_set[1])
     print("==== AFTER COMPRESSION ====")
@@ -64,7 +64,7 @@ parser.add_argument("--epochs", default=20, type=int)
 parser.add_argument("--data_path", default="./data/cifar-10-binary.tar.gz")
 parser.add_argument("--model_shape", default=[3072, 20, 20, 10], type=list)
 parser.add_argument("--learning_rate", default=0.01, type=float)
-parser.add_argument("--l2_lambda", default=0.4, type=float)
+parser.add_argument("--l2_lambda", default=0.01, type=float)
 args = parser.parse_args()
 
 
