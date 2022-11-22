@@ -37,10 +37,13 @@ def train_mnist(args):
         model.lr_step()
     print("Test Accuracy = ", model.validate(test_set[0], test_set[1]))
 
+    model.compress_mlp(5,True)
+    print("Test Accuracy = ", model.validate(test_set[0], test_set[1]))
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--batch_size", default=32, type=int)
-parser.add_argument("--epochs", default=20, type=int)
+parser.add_argument("--epochs", default=30, type=int)
 parser.add_argument("--data_path", default="./data/mnist.pkl.gz")
 parser.add_argument("--model_shape", default=[784, 20, 20, 10], type=list)
 parser.add_argument("--learning_rate", default=0.01, type=float)
@@ -48,3 +51,4 @@ args = parser.parse_args()
 
 
 train_mnist(args)
+

@@ -23,12 +23,14 @@ class MLP:
         self.weights = []
         self.bias = []
         self.l2_lambda = l2_lambda
+        self.compressed=False
+        self.double_layer=False
 
         for i in range(1, len(size)):
             self.weights.append(np.random.normal(0, 0.01, (size[i - 1], size[i])))
             self.bias.append(np.random.normal(0, 0.01, (1, size[i])))
 
-    def reover(self, weights, bias):
+    def recover(self, weights, bias):
         self.weights = weights
         self.bias = bias
         return self
@@ -81,6 +83,10 @@ class MLP:
         a = X
         for i in range(len(self.weights)):
             z = a @ self.weights[i] + self.bias[i]
+            if self.double_layer:
+                if np.sum(self.bias[i]**2)<1e-6:
+                    a=z
+                    continue
             a = ReLU(z)
 
         return softmax(z)
@@ -106,3 +112,44 @@ class MLP:
             self.weights, self.bias = pickle.load(f)
             f.close()
         return self
+
+
+    def truncted_svd(self,W,k):
+        U,sigma,V=np.linalg.svd(W,full_matrices=1,compute_uv=1)
+        #print(W.shape,U.shape,V.shape,sigma.shape)
+        Sigma=np.zeros_like(W)
+        for i in range(k):
+            if len(sigma)>k:
+                Sigma[i][i]=sigma[i]
+        #print(V.T.shape,Sigma.shape,U.T.shape,y.shape)
+        #print(Sigma1,Sigma2)
+        #sys.exit()
+
+        W=U@Sigma@V
+        U=U@Sigma
+        return W,U,V
+
+    def compress_mlp(self,k,double_layer=False):
+        weights=[]
+        bias=[]
+        self.double_layer=double_layer
+        if self.compressed:
+            return
+        else:
+            self.compressed=True
+        for i,w in enumerate(self.weights):
+            W,U,V=self.truncted_svd(w,k)
+            if double_layer:
+                weights.append(U)
+                print(U.shape)
+                weights.append(V)
+                print(V.shape)
+                bias.append(np.zeros((1, U.shape[1])))
+                print(np.zeros((1, U.shape[1])).shape)
+                bias.append(self.bias[i])
+                print(self.bias[i].shape)
+            else:
+                weights.append(W)
+                bias.append(self.bias[i])
+        self.bias=bias
+        self.weights=weights
