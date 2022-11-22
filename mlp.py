@@ -117,16 +117,18 @@ class MLP:
     def truncted_svd(self,W,k):
         U,sigma,V=np.linalg.svd(W,full_matrices=1,compute_uv=1)
         #print(W.shape,U.shape,V.shape,sigma.shape)
-        Sigma=np.zeros_like(W)
+        Sigma=np.zeros((k,k))
+        #print(Sigma.shape)
         for i in range(k):
             if len(sigma)>k:
                 Sigma[i][i]=sigma[i]
-        #print(V.T.shape,Sigma.shape,U.T.shape,y.shape)
-        #print(Sigma1,Sigma2)
         #sys.exit()
 
+        U=U[:,:k]
+        V=V[:k,:]
         W=U@Sigma@V
         U=U@Sigma
+        print(W.shape,U.shape,V.shape)
         return W,U,V
 
     def compress_mlp(self,k,double_layer=False):
