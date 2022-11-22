@@ -162,3 +162,5 @@ cython_debug/
 driver.py
 *.pkl
 *.png
+
+data/*.gz

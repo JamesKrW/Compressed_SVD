@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 
 
 def ReLU(z):
@@ -11,8 +12,6 @@ def softmax(z):
 
 
 class MLP:
-    eps = 1e-8
-
     def __init__(self, size=(784, 100, 10), lr=0.01, lr_ratio=0.9, l2_lambda=0.0):
         assert isinstance(size, list) or isinstance(
             size, tuple
@@ -32,6 +31,7 @@ class MLP:
     def reover(self, weights, bias):
         self.weights = weights
         self.bias = bias
+        return self
 
     def _loss(self, Y):
         cross_entropy_loss = -np.sum(Y * np.log(self.a[-1])) / len(Y)
@@ -75,6 +75,8 @@ class MLP:
             self.weights[i] -= self.lr * W_grad[i]
             self.bias[i] -= self.lr * b_grad[i]
 
+        return self
+
     def predict(self, X):
         a = X
         for i in range(len(self.weights)):
@@ -91,3 +93,16 @@ class MLP:
 
     def lr_step(self):
         self.lr *= self.lr_ratio
+        return self
+
+    def save(self, path):
+        with open(path, "wb") as f:
+            pickle.dump((self.weights, self.bias), f)
+            f.close()
+        return self
+
+    def load(self, path):
+        with open(path, "rb") as f:
+            self.weights, self.bias = pickle.load(f)
+            f.close()
+        return self

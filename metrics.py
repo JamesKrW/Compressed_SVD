@@ -1,6 +1,5 @@
 import sys
 import uuid
-import pickle
 from pathlib import Path
 from functools import wraps
 import time
@@ -38,7 +37,7 @@ def get_persisted_size(obj):
     id = uuid.uuid4()
     path = Path("/tmp") / str(id)
     path = path.with_suffix(".pkl")
-    pickle.dump(obj, open(path, "wb"))
+    obj.save(path)
     size = path.stat().st_size
     path.unlink()
     return size
