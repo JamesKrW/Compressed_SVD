@@ -2,17 +2,14 @@ import numpy as np
 import pickle
 
 
-def ReLU(z):
-    return np.maximum(z, 0.0)
-
-
-def softmax(z):
-    z_temp = np.exp(z)
-    return z_temp / np.sum(z_temp, axis=1, keepdims=True)
-
-
 class MLP:
-    def __init__(self, size=(784, 100, 10), lr=0.01, lr_ratio=0.9, l2_lambda=0.0):
+    def __init__(
+        self,
+        size=(784, 100, 10),
+        lr: float = 0.01,
+        lr_ratio: float = 0.9,
+        l2_lambda: float = 0.0,
+    ):
         assert isinstance(size, list) or isinstance(
             size, tuple
         ), "size must be a list or tuple."
@@ -23,12 +20,19 @@ class MLP:
         self.weights = []
         self.bias = []
         self.l2_lambda = l2_lambda
-        self.compressed=False
-        self.double_layer=False
+        self.compressed = False
+        self.double_layer = False
 
         for i in range(1, len(size)):
             self.weights.append(np.random.normal(0, 0.01, (size[i - 1], size[i])))
             self.bias.append(np.random.normal(0, 0.01, (1, size[i])))
+
+    def ReLU(self, z):
+        return np.maximum(z, 0.0)
+
+    def softmax(self, z):
+        z_temp = np.exp(z)
+        return z_temp / np.sum(z_temp, axis=1, keepdims=True)
 
     def recover(self, weights, bias):
         self.weights = weights
@@ -54,8 +58,8 @@ class MLP:
         self.a = [X]
         for w, b in zip(self.weights, self.bias):
             self.z.append(self.a[-1] @ w + b)
-            self.a.append(ReLU(self.z[-1]))
-        self.a[-1] = softmax(self.z[-1])
+            self.a.append(self.ReLU(self.z[-1]))
+        self.a[-1] = self.softmax(self.z[-1])
 
         return self._loss(Y)
 
@@ -84,12 +88,12 @@ class MLP:
         for i in range(len(self.weights)):
             z = a @ self.weights[i] + self.bias[i]
             if self.double_layer:
-                if np.sum(self.bias[i]**2)<1e-6:
-                    a=z
+                if np.sum(self.bias[i] ** 2) < 1e-6:
+                    a = z
                     continue
-            a = ReLU(z)
+            a = self.ReLU(z)
 
-        return softmax(z)
+        return self.softmax(z)
 
     def validate(self, X, Y):
         pred = np.argmax(self.predict(X), axis=1)
@@ -101,45 +105,41 @@ class MLP:
         self.lr *= self.lr_ratio
         return self
 
-    def save(self, path):
+    def save(self, path: str):
         with open(path, "wb") as f:
             pickle.dump((self.weights, self.bias), f)
             f.close()
         return self
 
-    def load(self, path):
+    def load(self, path: str):
         with open(path, "rb") as f:
             self.weights, self.bias = pickle.load(f)
             f.close()
         return self
 
+    def truncated_svd(self, W, k: int):
+        U, sigma, V = np.linalg.svd(W, full_matrices=True, compute_uv=True)
+        Sigma = np.zeros_like(W)
 
-    def truncted_svd(self,W,k):
-        U,sigma,V=np.linalg.svd(W,full_matrices=1,compute_uv=1)
-        #print(W.shape,U.shape,V.shape,sigma.shape)
-        Sigma=np.zeros_like(W)
         for i in range(k):
-            if len(sigma)>k:
-                Sigma[i][i]=sigma[i]
-        #print(V.T.shape,Sigma.shape,U.T.shape,y.shape)
-        #print(Sigma1,Sigma2)
-        #sys.exit()
+            if len(sigma) > k:
+                Sigma[i][i] = sigma[i]
 
-        W=U@Sigma@V
-        U=U@Sigma
-        return W,U,V
+        W = U @ Sigma @ V
+        U = U @ Sigma
+        return W, U, V
 
-    def compress_mlp(self,k,double_layer=False):
-        weights=[]
-        bias=[]
-        self.double_layer=double_layer
+    def compress_mlp(self, k: int, double_layer: bool = False):
+        weights = []
+        bias = []
+
         if self.compressed:
-            return
-        else:
-            self.compressed=True
-        for i,w in enumerate(self.weights):
-            W,U,V=self.truncted_svd(w,k)
+            return self
+
+        for i, w in enumerate(self.weights):
+            W, U, V = self.truncated_svd(w, k)
             if double_layer:
+                print("LAYER {}:".format(i))
                 weights.append(U)
                 print(U.shape)
                 weights.append(V)
@@ -148,8 +148,12 @@ class MLP:
                 print(np.zeros((1, U.shape[1])).shape)
                 bias.append(self.bias[i])
                 print(self.bias[i].shape)
+                print()
             else:
                 weights.append(W)
                 bias.append(self.bias[i])
-        self.bias=bias
-        self.weights=weights
+
+        self.double_layer = double_layer
+        self.compressed = True
+
+        return self.recover(weights, bias)

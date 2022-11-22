@@ -164,3 +164,4 @@ driver.py
 *.png
 
 data/*.gz
+.DS_Store
