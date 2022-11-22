@@ -128,7 +128,7 @@ class MLP:
         V=V[:k,:]
         W=U@Sigma@V
         U=U@Sigma
-        print(W.shape,U.shape,V.shape)
+        #print(W.shape,U.shape,V.shape)
         return W,U,V
 
     def compress_mlp(self,k,double_layer=False):
