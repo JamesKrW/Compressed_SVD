@@ -144,16 +144,17 @@ class MLP:
         for i, w in enumerate(self.weights):
             W, U, V = self.truncated_svd(w, k)
             if double_layer:
-                print("LAYER {}:".format(i))
+                #print("LAYER {}:".format(i))
                 weights.append(U)
-                print(U.shape)
+                
+                #print(U.shape)
                 weights.append(V)
-                print(V.shape)
+                #print(V.shape)
                 bias.append(np.zeros((1, U.shape[1])))
-                print(np.zeros((1, U.shape[1])).shape)
+                #print(np.zeros((1, U.shape[1])).shape)
                 bias.append(self.bias[i])
-                print(self.bias[i].shape)
-                print()
+                #print(self.bias[i].shape)
+                #print()
             else:
                 weights.append(W)
                 bias.append(self.bias[i])
