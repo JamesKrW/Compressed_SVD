@@ -1,21 +1,41 @@
 import argparse
-from mlp import MLP
+from datetime import datetime
+
+import metrics
 import numpy as np
 from data_set import mnist
-import metrics
+from mlp import MLP
 
 
 @metrics.timing
 def main(args):
     epochs = args.epochs
     batch_size = args.batch_size
-    train_set, valid_set, test_set = mnist(args.data_path, one_hot=True)
+    train_set, valid_set, test_set = mnist(
+        args.data_path, one_hot=True
+    )
     X_train = train_set[0]
     Y_train = train_set[1]
 
-    model = MLP(args.model_shape, lr=args.learning_rate, l2_lambda=args.l2_lambda)
+    model = MLP(
+        args.model_shape,
+        batch_size=batch_size,
+        lr=args.learning_rate,
+        l2_lambda=args.l2_lambda,
+    )
 
-    with metrics.Benchmark("Training"):
+    metric = metrics.Metric()
+
+    metric.add("time", datetime.now())
+    metric.add("dataset", "mnist")
+    metric.add("k", args.k)
+    metric.add("shape", args.model_shape)
+    metric.add("batch_size", args.batch_size)
+    metric.add("lr", args.learning_rate)
+    metric.add("epochs", args.epochs)
+    metric.add("l2_lambda", args.l2_lambda)
+
+    with metrics.Timer("Training") as t:
         for epoch in range(epochs):
             indexes = np.arange(len(X_train))
             steps = len(X_train) // batch_size
@@ -26,50 +46,50 @@ def main(args):
                 y = Y_train[ind]
                 loss = model(x, y)
                 model.backward()
-                # print('Epoch[{}], Step[{}], loss = {}'.format(epoch, i, loss))
 
                 if (i + 1) % 100 == 0:
-                    accuracy = model.validate(valid_set[0], valid_set[1])
+                    accuracy = model.validate(
+                        valid_set[0], valid_set[1]
+                    )
                     print(
                         "Epoch[{}/{}] \t Step[{}/{}] \t Loss = {:.6f} \t Acc = {:.3f}".format(
-                            epoch + 1, epochs, i + 1, steps, loss, accuracy
+                            epoch + 1,
+                            epochs,
+                            i + 1,
+                            steps,
+                            loss,
+                            accuracy,
                         )
                     )
             model.lr_step()
 
-    with metrics.Benchmark("Validation Before Compression"):
-        test_accuracy = model.validate(test_set[0], test_set[1])
-    print("==== BEFORE COMPRESSION ====")
-    print("Test Accuracy = ", test_accuracy)
-    print(f"Memory size before compression: {metrics.get_mem_size_kb(model)} KB")
-    print(
-        f"Persisted size before compression: {metrics.get_persisted_size_kb(model)} KB"
-    )
-    print()
+    metric.add("train_time", t.get(), "s")
 
-    model.compress_mlp(k=5, double_layer=True)
-    with metrics.Benchmark("Validation After Compression"):
-        test_accuracy = model.validate(test_set[0], test_set[1])
-    print("==== AFTER COMPRESSION ====")
-    print("Test Accuracy", test_accuracy)
-    print(f"Memory size after compression: {metrics.get_mem_size_kb(model)} KB")
-    print(
-        f"Persisted size after compression: {metrics.get_persisted_size_kb(model)} KB"
+    metrics.run_metrics(
+        metric, model, test_set, after_compression=False
     )
-    print()
+    model.compress_mlp(k=args.k, double_layer=True)
+    metrics.run_metrics(
+        metric, model, test_set, after_compression=True
+    )
 
-    metrics.Benchmark.print_all_benchmarks()
+    metric.show()
+    metric.save_to_csv("mnist.csv")
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--batch_size", default=32, type=int)
 parser.add_argument("--epochs", default=60, type=int)
+parser.add_argument("--k", default=5, type=int)
 parser.add_argument("--data_path", default="./data/mnist.pkl.gz")
-parser.add_argument("--model_shape", default=[784, 20, 20, 20, 10], type=list)
+parser.add_argument(
+    "--model_shape", default=[784, 20, 20, 20, 10], type=list
+)
 parser.add_argument("--learning_rate", default=0.01, type=float)
-parser.add_argument("--l2_lambda", default=0.00, type=float)
+parser.add_argument("--l2_lambda", default=0.0, type=float)
 args = parser.parse_args()
 
-# trainable arguments:shape=[784, 300, 150,75,10],lr=0.01
-# trainable arguments:shape=[784, 20, 20,20,10],lr=0.01
+# trainable arguments:shape=[784, 300, 150, 75, 10], lr=0.01
+# trainable arguments:shape=[784, 20, 20, 20, 10], lr=0.01
+# trainable arguments:shape=[784, 20, 20, 10], lr=0.01, l2_lambda=0.01
 main(args)

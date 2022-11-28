@@ -1,11 +1,13 @@
-import numpy as np
 import pickle
+
+import numpy as np
 
 
 class MLP:
     def __init__(
         self,
         size=(784, 100, 10),
+        batch_size: int = 100,
         lr: float = 0.01,
         lr_ratio: float = 0.9,
         l2_lambda: float = 0.0,
@@ -13,10 +15,13 @@ class MLP:
         assert isinstance(size, list) or isinstance(
             size, tuple
         ), "size must be a list or tuple."
-        assert len(size) > 1, "the length of size must be greater than 1."
+        assert (
+            len(size) > 1
+        ), "the length of size must be greater than 1."
 
         self.lr = lr
         self.lr_ratio = lr_ratio
+        self.batch_size = batch_size
         self.weights = []
         self.bias = []
         self.l2_lambda = l2_lambda
@@ -24,7 +29,9 @@ class MLP:
         self.double_layer = False
 
         for i in range(1, len(size)):
-            self.weights.append(np.random.normal(0, 0.01, (size[i - 1], size[i])))
+            self.weights.append(
+                np.random.normal(0, 0.01, (size[i - 1], size[i]))
+            )
             self.bias.append(np.random.normal(0, 0.01, (1, size[i])))
 
     def ReLU(self, z):
@@ -49,8 +56,8 @@ class MLP:
 
         return cross_entropy_loss + l2_loss
 
-    def _weight_decay(self, w, n: int):
-        return w * (1 - (self.l2_lambda * self.lr / n))
+    def _weight_decay(self, w):
+        return w * (1 - (self.l2_lambda * self.lr))
 
     def __call__(self, X, Y):
         self.target = Y
@@ -68,7 +75,9 @@ class MLP:
         W_grad = []
         b_grad = []
         delta = (self.a[-1] - self.target) / len(self.target)
-        for i in range(len(self.weights) - 1, -1, -1):
+        n = len(self.weights)
+
+        for i in range(n - 1, -1, -1):
             W_grad.insert(0, self.a[i].T @ delta)
             b_grad.insert(0, np.sum(delta, axis=0, keepdims=True))
             if i == 0:
@@ -78,9 +87,8 @@ class MLP:
             )  # * self.a[i] * (1.0 - self.a[i])
 
         # update trained parameters
-        n = len(self.weights)
         for i in range(n):
-            self.weights[i] = self._weight_decay(self.weights[i], n) - (
+            self.weights[i] = self._weight_decay(self.weights[i]) - (
                 self.lr * W_grad[i]
             )
             self.bias[i] -= self.lr * b_grad[i]
@@ -144,17 +152,10 @@ class MLP:
         for i, w in enumerate(self.weights):
             W, U, V = self.truncated_svd(w, k)
             if double_layer:
-                #print("LAYER {}:".format(i))
                 weights.append(U)
-                
-                #print(U.shape)
                 weights.append(V)
-                #print(V.shape)
                 bias.append(np.zeros((1, U.shape[1])))
-                #print(np.zeros((1, U.shape[1])).shape)
                 bias.append(self.bias[i])
-                #print(self.bias[i].shape)
-                #print()
             else:
                 weights.append(W)
                 bias.append(self.bias[i])
