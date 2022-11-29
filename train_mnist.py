@@ -3,7 +3,7 @@ from datetime import datetime
 
 import metrics
 import numpy as np
-from data_set import mnist
+from dataset import mnist
 from mlp import MLP
 
 

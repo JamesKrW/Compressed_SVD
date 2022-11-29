@@ -1,11 +1,20 @@
 # Compressed_SVD
 
-## Requirements
+## Dependencies
 
 ```
 python >= 3.7
 tqdm
 tabulate
+numpy
+```
+
+## Setting up Conda environment
+
+```sh
+conda create --name mlfoundie python=3.10
+conda activate mlfoundie
+conda install -c conda-forge scipy sympy numpy pandas ipython ipywidgets ipykernel jupyterlab jupytext matplotlib "nbconvert[webpdf]"
 ```
 
 ## TO DO

@@ -3,7 +3,7 @@ from datetime import datetime
 
 import metrics
 import numpy as np
-from data_set import cifar10
+from dataset import cifar10
 from mlp import MLP
 
 
