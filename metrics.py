@@ -9,36 +9,41 @@ from pathlib import Path
 from typing import Union
 
 import numpy.typing as npt
+import objsize
 import pandas as pd
 from mlp import MLP
 
+# def get_mem_size(obj, seen=None):
+#     """Recursively finds size of objects (in bytes)"""
+#     size = sys.getsizeof(obj)
+#     if seen is None:
+#         seen = set()
+#     obj_id = id(obj)
+#     if obj_id in seen:
+#         return 0
+#     # Important mark as seen *before* entering recursion to gracefully handle
+#     # self-referential objects
+#     seen.add(obj_id)
+#     if isinstance(obj, dict):
+#         size += sum([get_mem_size(v, seen) for v in obj.values()])
+#         size += sum([get_mem_size(k, seen) for k in obj.keys()])
+#     elif hasattr(obj, "__dict__"):
+#         size += get_mem_size(obj.__dict__, seen)
+#     elif hasattr(obj, "__iter__") and not isinstance(
+#         obj, (str, bytes, bytearray)
+#     ):
+#         size += sum([get_mem_size(i, seen) for i in obj])
+#     return size
 
-def get_mem_size(obj, seen=None):
+
+def get_mem_size(obj):
     """Recursively finds size of objects (in bytes)"""
-    size = sys.getsizeof(obj)
-    if seen is None:
-        seen = set()
-    obj_id = id(obj)
-    if obj_id in seen:
-        return 0
-    # Important mark as seen *before* entering recursion to gracefully handle
-    # self-referential objects
-    seen.add(obj_id)
-    if isinstance(obj, dict):
-        size += sum([get_mem_size(v, seen) for v in obj.values()])
-        size += sum([get_mem_size(k, seen) for k in obj.keys()])
-    elif hasattr(obj, "__dict__"):
-        size += get_mem_size(obj.__dict__, seen)
-    elif hasattr(obj, "__iter__") and not isinstance(
-        obj, (str, bytes, bytearray)
-    ):
-        size += sum([get_mem_size(i, seen) for i in obj])
-    return size
+    return objsize.get_deep_size(obj)
 
 
-def get_mem_size_kb(obj, seen=None):
+def get_mem_size_kb(obj):
     """Recursively finds size of objects (in KB)"""
-    return get_mem_size(obj, seen) / 1024
+    return get_mem_size(obj) / 1024
 
 
 def get_persisted_size(obj):

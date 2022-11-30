@@ -124,7 +124,6 @@ class MLP:
         return self
 
     def load(self, path: str):
-        print("Loading model from", path)
         with open(path, "rb") as f:
             self.weights, self.bias = pickle.load(f)
             f.close()

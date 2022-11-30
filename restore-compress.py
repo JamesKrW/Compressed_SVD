@@ -6,6 +6,12 @@ from dataset import cifar10, mnist
 from mlp import MLP
 from utils import load_model
 
+# THIS IS ONLY FINE IF YOU WANT TO GET PERSISTED SIZE
+# MEMORY SIZE WON'T WORK FINE BECAUSE RESTORED ORIGINAL MODEL
+# BEFORE COMPRESSION WON'T DO ANY CALCULATION THUS NO MEMORY IS ALLOCATED
+# COMPRESSED MODEL ON THE OTHER HAND WILL DO CALCULATION AND ALLOCATE MEMORY
+# THUS CREATING MORE MEMORY USAGE THAN ORIGINAL MODEL
+
 
 def main(args):
     dataset = args.dataset
@@ -36,7 +42,9 @@ def main(args):
 
     metric.add("train_time", 0, "s")
 
-    load_model(model, args, dataset=dataset, base_path="./saved")
+    model = load_model(
+        model, args, dataset=dataset, base_path="./saved"
+    )
 
     metrics.run_metrics(
         metric, model, test_set, after_compression=False
@@ -57,7 +65,7 @@ parser.add_argument("--dataset", default="mnist", type=str)
 parser.add_argument("--k", default=5, type=int)
 parser.add_argument("--data_path", default="./data/mnist.pkl.gz")
 parser.add_argument(
-    "--model_shape", default=[784, 20, 20, 20, 10], type=list
+    "--model_shape", default=[784, 20, 20, 10], type=list
 )
 parser.add_argument("--learning_rate", default=0.01, type=float)
 parser.add_argument("--l2_lambda", default=0.0, type=float)
