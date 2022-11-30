@@ -1,0 +1,30 @@
+[tool.black]
+line-length = 70
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+# A regex preceded with ^/ will apply only to files and directories
+# in the root of the project.
+^/foo.py  # exclude a file named foo.py in the root of the project (in addition to the defaults)
+'''
+
+[tool.isort]
+atomic = true
+group_by_package = true
+py_version = 39
+skip = [".gitignore", ".dockerignore"]
+line_length = 70
+sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER']
+
+[tool.mypy]
+files = ["*.py"]
+ignore_missing_imports = true
+exclude = []
+
+[tool.pyright]
+include = ["*.py"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__"
+]
+ignore = []

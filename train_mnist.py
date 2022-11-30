@@ -12,9 +12,7 @@ from utils import save_model
 def main(args):
     epochs = args.epochs
     batch_size = args.batch_size
-    train_set, valid_set, test_set = mnist(
-        args.data_path, one_hot=True
-    )
+    train_set, valid_set, test_set = mnist(args.data_path, one_hot=True)
     X_train = train_set[0]
     Y_train = train_set[1]
 
@@ -51,9 +49,7 @@ def main(args):
                 model.backward()
 
                 if (i + 1) % 100 == 0:
-                    accuracy = model.validate(
-                        valid_set[0], valid_set[1]
-                    )
+                    accuracy = model.validate(valid_set[0], valid_set[1])
                     print(
                         "Epoch[{}/{}] \t Step[{}/{}] \t Loss = {:.6f} \t Acc = {:.3f}".format(
                             epoch + 1,
@@ -67,17 +63,11 @@ def main(args):
             model.lr_step()
 
     metric.add("train_time", t.get(), "s")
-    save_model(
-        model=model, args=args, dataset="mnist", base_path="./saved"
-    )
+    save_model(model=model, args=args, dataset="mnist", base_path="./saved")
 
-    metrics.run_metrics(
-        metric, model, test_set, after_compression=False
-    )
+    metrics.run_metrics(metric, model, test_set, after_compression=False)
     model.compress_mlp(k=args.k, double_layer=not args.single_layer)
-    metrics.run_metrics(
-        metric, model, test_set, after_compression=True
-    )
+    metrics.run_metrics(metric, model, test_set, after_compression=True)
 
     metric.show()
     pruning_fl = "pruned" if args.pruning else "non_pruned"
@@ -91,9 +81,7 @@ parser.add_argument("--batch_size", default=32, type=int)
 parser.add_argument("--epochs", default=60, type=int)
 parser.add_argument("--k", default=5, type=int)
 parser.add_argument("--data_path", default="./data/mnist.pkl.gz")
-parser.add_argument(
-    "--model_shape", default=[784, 20, 20, 10], type=list
-)
+parser.add_argument("--model_shape", default=[784, 20, 20, 10], type=list)
 parser.add_argument("--learning_rate", default=0.01, type=float)
 parser.add_argument("--l2_lambda", default=0.0, type=float)
 parser.add_argument(

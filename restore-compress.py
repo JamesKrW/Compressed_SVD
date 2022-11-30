@@ -42,17 +42,11 @@ def main(args):
 
     metric.add("train_time", 0, "s")
 
-    model = load_model(
-        model, args, dataset=dataset, base_path="./saved"
-    )
+    model = load_model(model, args, dataset=dataset, base_path="./saved")
 
-    metrics.run_metrics(
-        metric, model, test_set, after_compression=False
-    )
+    metrics.run_metrics(metric, model, test_set, after_compression=False)
     model.compress_mlp(k=args.k, double_layer=True)
-    metrics.run_metrics(
-        metric, model, test_set, after_compression=True
-    )
+    metrics.run_metrics(metric, model, test_set, after_compression=True)
 
     metric.show()
     metric.save_to_csv(f"{dataset}.csv")
@@ -64,9 +58,7 @@ parser.add_argument("--epochs", default=60, type=int)
 parser.add_argument("--dataset", default="mnist", type=str)
 parser.add_argument("--k", default=5, type=int)
 parser.add_argument("--data_path", default="./data/mnist.pkl.gz")
-parser.add_argument(
-    "--model_shape", default=[784, 20, 20, 10], type=list
-)
+parser.add_argument("--model_shape", default=[784, 20, 20, 10], type=list)
 parser.add_argument("--learning_rate", default=0.01, type=float)
 parser.add_argument("--l2_lambda", default=0.0, type=float)
 args = parser.parse_args()

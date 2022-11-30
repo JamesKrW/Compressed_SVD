@@ -59,13 +59,9 @@ def _save_response_content(
 
 
 # taken from https://github.com/pytorch/vision/blob/main/torchvision/datasets/utils.py
-def _urlretrieve(
-    url: str, filename: str, chunk_size: int = 1024 * 32
-) -> None:
+def _urlretrieve(url: str, filename: str, chunk_size: int = 1024 * 32) -> None:
     with urllib.request.urlopen(
-        urllib.request.Request(
-            url, headers={"User-Agent": USER_AGENT}
-        )
+        urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     ) as response:
         _save_response_content(
             iter(lambda: response.read(chunk_size), b""),
@@ -149,9 +145,7 @@ def mnist(path, one_hot=False):
 
     # load the dataset
     with gzip.open(path, "rb") as f:
-        train_set, valid_set, test_set = pickle.load(
-            f, encoding="latin1"
-        )
+        train_set, valid_set, test_set = pickle.load(f, encoding="latin1")
 
     def get_one_hot(targets, nb_classes):
         return np.eye(nb_classes)[np.array(targets).reshape(-1)]
@@ -221,9 +215,7 @@ def cifar10(path: Union[str, Path], one_hot=False):
             # Get member as a file object
             f = tar_object.extractfile(member)
             # Read bytes from that file object into buffr
-            buffr[i * fsize : (i + 1) * fsize] = np.frombuffer(
-                f.read(), "B"
-            )
+            buffr[i * fsize : (i + 1) * fsize] = np.frombuffer(f.read(), "B")
 
     # Parse data from buffer
     # -- Examples are in chunks of 3,073 bytes

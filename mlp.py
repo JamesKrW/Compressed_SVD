@@ -15,9 +15,7 @@ class MLP:
         assert isinstance(size, list) or isinstance(
             size, tuple
         ), "size must be a list or tuple."
-        assert (
-            len(size) > 1
-        ), "the length of size must be greater than 1."
+        assert len(size) > 1, "the length of size must be greater than 1."
 
         self.lr = lr
         self.lr_ratio = lr_ratio
@@ -29,9 +27,7 @@ class MLP:
         self.double_layer = False
 
         for i in range(1, len(size)):
-            self.weights.append(
-                np.random.normal(0, 0.01, (size[i - 1], size[i]))
-            )
+            self.weights.append(np.random.normal(0, 0.01, (size[i - 1], size[i])))
             self.bias.append(np.random.normal(0, 0.01, (1, size[i])))
 
     def ReLU(self, z):

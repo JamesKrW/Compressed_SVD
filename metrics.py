@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
-from typing import Union
+from typing import Any, Union
 
 import numpy.typing as npt
 import pandas as pd
@@ -29,9 +29,7 @@ def get_mem_size(obj, seen=None):
         size += sum([get_mem_size(k, seen) for k in obj.keys()])
     elif hasattr(obj, "__dict__"):
         size += get_mem_size(obj.__dict__, seen)
-    elif hasattr(obj, "__iter__") and not isinstance(
-        obj, (str, bytes, bytearray)
-    ):
+    elif hasattr(obj, "__iter__") and not isinstance(obj, (str, bytes, bytearray)):
         size += sum([get_mem_size(i, seen) for i in obj])
     return size
 
@@ -70,9 +68,7 @@ def timing(func):
         ed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         tot_time = end - start
         tot_time = float(f"{tot_time:.4f}")
-        print(
-            f"'{func.__name__}()' ends at {ed} and takes {tot_time} seconds."
-        )
+        print(f"'{func.__name__}()' ends at {ed} and takes {tot_time} seconds.")
         func.tot_time = tot_time  # add new variable to func
         return result, tot_time
 
@@ -105,7 +101,7 @@ class Timer:
 
 @dataclass
 class MetricValue:
-    value: float
+    value: Any
     unit: str = ""
 
     def __str__(self):
