@@ -10,10 +10,7 @@ def hash_model(args: Any):
     """Hash the model's args to a unique name"""
     md5 = hashlib.md5(usedforsecurity=False)
     md5.update(json.dumps(vars(args), indent=2).encode("utf-8"))
-    # md5.update(vars(args))
     dig = md5.hexdigest()
-
-    print(json.dumps(vars(args)), dig)
     return dig
 
 
