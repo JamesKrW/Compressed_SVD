@@ -72,13 +72,16 @@ def main(args):
     metrics.run_metrics(
         metric, model, test_set, after_compression=False
     )
-    model.compress_mlp(k=args.k, double_layer=True)
+    model.compress_mlp(k=args.k, double_layer=args.double_layer)
     metrics.run_metrics(
         metric, model, test_set, after_compression=True
     )
 
     metric.show()
-    metric.save_to_csv("cifar.csv")
+    pruning_fl = "pruned" if args.pruning else "not_pruned"
+    layer_fl = "double_layer" if args.double_layer else "single_layer"
+    filename = f"cifar_{pruning_fl}_{layer_fl}"
+    metric.save_to_csv(f"{filename}.csv")
 
 
 parser = argparse.ArgumentParser()
@@ -93,6 +96,18 @@ parser.add_argument(
 )
 parser.add_argument("--learning_rate", default=0.01, type=float)
 parser.add_argument("--l2_lambda", default=0.01, type=float)
+parser.add_argument(
+    "--pruning",
+    help="Enable pruning",
+    action="store_true",
+    default=False,
+)
+parser.add_argument(
+    "--double_layer",
+    help="Enable double layer",
+    action="store_true",
+    default=True,
+)
 args = parser.parse_args()
 
 
