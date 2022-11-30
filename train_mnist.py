@@ -35,6 +35,8 @@ def main(args):
     metric.add("lr", args.learning_rate)
     metric.add("epochs", args.epochs)
     metric.add("l2_lambda", args.l2_lambda)
+    metric.add("double_layer", int(not args.single_layer))
+    metric.add("pruning", int(args.pruning))
 
     with metrics.Timer("Training") as t:
         for epoch in range(epochs):
