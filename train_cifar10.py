@@ -70,7 +70,7 @@ def main(args):
     metrics.run_metrics(metric, model, test_set, after_compression=True)
 
     metric.show()
-    pruning_fl = "pruned" if args.pruning else "not_pruned"
+    pruning_fl = "pruned" if args.pruning else "non_pruned"
     layer_fl = "single_layer" if args.single_layer else "double_layer"
     filename = f"cifar_{pruning_fl}_{layer_fl}"
     metric.save_to_csv(f"{filename}.csv")
