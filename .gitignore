@@ -165,3 +165,5 @@ driver.py
 
 data/*.gz
 .DS_Store
+saved/
+*.csv

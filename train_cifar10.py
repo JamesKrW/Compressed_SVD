@@ -5,6 +5,7 @@ import metrics
 import numpy as np
 from dataset import cifar10
 from mlp import MLP
+from utils import save_model
 
 
 @metrics.timing
@@ -64,6 +65,9 @@ def main(args):
             model.lr_step()
 
     metric.add("train_time", t.get(), "s")
+    save_model(
+        model=model, args=args, dataset="cifar10", base_path="./saved"
+    )
 
     metrics.run_metrics(
         metric, model, test_set, after_compression=False
