@@ -72,7 +72,7 @@ def main(args):
     metrics.run_metrics(
         metric, model, test_set, after_compression=False
     )
-    model.compress_mlp(k=args.k, double_layer=args.pruning)
+    model.compress_mlp(k=args.k, double_layer=args.double_layer)
     metrics.run_metrics(
         metric, model, test_set, after_compression=True
     )
