@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Union
 
 import numpy.typing as npt
-import objsize
 import pandas as pd
 from mlp import MLP
 
