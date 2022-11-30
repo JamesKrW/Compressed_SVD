@@ -86,7 +86,7 @@ def main(args):
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--batch_size", default=32, type=int)
-parser.add_argument("--epochs", default=20, type=int)
+parser.add_argument("--epochs", default=60, type=int)
 parser.add_argument("--k", default=5, type=int)
 parser.add_argument(
     "--data_path", default="./data/cifar-10-binary.tar.gz"
@@ -95,7 +95,7 @@ parser.add_argument(
     "--model_shape", default=[3072, 20, 20, 10], type=list
 )
 parser.add_argument("--learning_rate", default=0.01, type=float)
-parser.add_argument("--l2_lambda", default=0.01, type=float)
+parser.add_argument("--l2_lambda", default=0.00, type=float)
 parser.add_argument(
     "--pruning",
     help="Enable pruning",
