@@ -83,4 +83,4 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--output", default="./plots", type=str)
     parser.add_argument("--format", default="eps", type=str)
     args = parser.parse_args()
-    plot(args.file, args.format)
+    plot(args.file, args.output, format=args.format)
