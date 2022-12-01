@@ -66,6 +66,8 @@ def main(args):
     save_model(model=model, args=args, dataset="cifar10", base_path="./saved")
 
     metrics.run_metrics(metric, model, test_set, after_compression=False)
+    if args.pruning:
+        model.sigma_pruning()
     model.compress_mlp(k=args.k, double_layer=not args.single_layer)
     metrics.run_metrics(metric, model, test_set, after_compression=True)
 
@@ -79,7 +81,7 @@ def main(args):
 parser = argparse.ArgumentParser()
 parser.add_argument("--batch_size", default=32, type=int)
 parser.add_argument("--epochs", default=60, type=int)
-parser.add_argument("--k", default=5, type=int)
+parser.add_argument("--k", default=0.5, type=float)
 parser.add_argument("--data_path", default="./data/cifar-10-binary.tar.gz")
 parser.add_argument("--model_shape", default=[3072, 20, 20, 10], type=list)
 parser.add_argument("--learning_rate", default=0.01, type=float)

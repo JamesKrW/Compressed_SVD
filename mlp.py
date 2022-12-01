@@ -125,22 +125,20 @@ class MLP:
             f.close()
         return self
 
-    def sigma_pruning(self,lambda_=2):
+    def sigma_pruning(self, lambda_=2):
         weights = []
         bias = []
         for i, w in enumerate(self.weights):
-            mu=np.mean(w)
-            print(mu)
-            sigma=np.mean((w-mu)**2)
-            print(sigma)
-            w_hat=np.where(np.abs(w-mu)>lambda_*sigma, w, 0)
+            mu = np.mean(w)
+            sigma = np.mean((w - mu) ** 2)
+            w_hat = np.where(np.abs(w - mu) > lambda_ * sigma, w, 0)
             weights.append(w_hat)
             bias.append(self.bias[i])
         return self.recover(weights, bias)
 
     def truncated_svd(self, W, k: float):
         U, sigma, V = np.linalg.svd(W, full_matrices=1, compute_uv=1)
-        rank_hat=int((len(sigma))*k)
+        rank_hat = int((len(sigma)) * k)
         Sigma = np.zeros((rank_hat, rank_hat))
         for i in range(rank_hat):
             Sigma[i][i] = sigma[i]
