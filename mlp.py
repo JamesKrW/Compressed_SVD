@@ -125,15 +125,28 @@ class MLP:
             f.close()
         return self
 
-    def truncated_svd(self, W, k: int):
-        U, sigma, V = np.linalg.svd(W, full_matrices=1, compute_uv=1)
-        Sigma = np.zeros((k, k))
-        for i in range(k):
-            if len(sigma) > k:
-                Sigma[i][i] = sigma[i]
+    def sigma_pruning(self,lambda_=2):
+        weights = []
+        bias = []
+        for i, w in enumerate(self.weights):
+            mu=np.mean(w)
+            print(mu)
+            sigma=np.mean((w-mu)**2)
+            print(sigma)
+            w_hat=np.where(np.abs(w-mu)>lambda_*sigma, w, 0)
+            weights.append(w_hat)
+            bias.append(self.bias[i])
+        return self.recover(weights, bias)
 
-        U = U[:, :k]
-        V = V[:k, :]
+    def truncated_svd(self, W, k: float):
+        U, sigma, V = np.linalg.svd(W, full_matrices=1, compute_uv=1)
+        rank_hat=int((len(sigma))*k)
+        Sigma = np.zeros((rank_hat, rank_hat))
+        for i in range(rank_hat):
+            Sigma[i][i] = sigma[i]
+
+        U = U[:, :rank_hat]
+        V = V[:rank_hat, :]
         W = U @ Sigma @ V
         U = U @ Sigma
         return W, U, V
