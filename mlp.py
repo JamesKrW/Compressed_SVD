@@ -1,4 +1,5 @@
 import pickle
+from typing import List
 
 import numpy as np
 
@@ -20,8 +21,8 @@ class MLP:
         self.lr = lr
         self.lr_ratio = lr_ratio
         self.batch_size = batch_size
-        self.weights = []
-        self.bias = []
+        self.weights: List[np.ndarray] = []
+        self.bias: List[np.ndarray] = []
         self.l2_lambda = l2_lambda
         self.compressed = False
         self.double_layer = False
@@ -54,6 +55,10 @@ class MLP:
 
     def _weight_decay(self, w):
         return w * (1 - (self.l2_lambda * self.lr))
+
+    @property
+    def metadata(self):
+        return self.weights, self.bias
 
     def __call__(self, X, Y):
         self.target = Y
@@ -113,9 +118,34 @@ class MLP:
         self.lr *= self.lr_ratio
         return self
 
-    def save(self, path: str):
+    def save_original(self, path: str):
         with open(path, "wb") as f:
             pickle.dump((self.weights, self.bias), f)
+            f.close()
+        return self
+
+    def save(self, path: str):
+        weights = []
+        bias = []
+
+        for i in range(len(self.weights)):
+            weights.append(self.weights[i].tolist())
+            bias.append(self.bias[i].tolist())
+
+        for i in range(len(weights)):
+            for j in range(len(weights[i])):
+                for k in range(len(weights[i][j])):
+                    if abs(weights[i][j][k]) < 1e-4:
+                        weights[i][j][k] = bool(0)
+
+        for i in range(len(bias)):
+            for j in range(len(bias[i])):
+                for k in range(len(bias[i][j])):
+                    if abs(bias[i][j][k]) < 1e-4:
+                        bias[i][j][k] = bool(0)
+
+        with open(path, "wb") as f:
+            pickle.dump((weights, bias), f)
             f.close()
         return self
 
@@ -125,7 +155,7 @@ class MLP:
             f.close()
         return self
 
-    def sigma_pruning(self, lambda_=2):
+    def sigma_pruning(self, lambda_: float = 2.0):
         weights = []
         bias = []
         for i, w in enumerate(self.weights):

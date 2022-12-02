@@ -9,7 +9,13 @@ from mlp import MLP
 def hash_model(args: Any):
     """Hash the model's args to a unique name"""
     md5 = hashlib.md5(usedforsecurity=False)
-    md5.update(json.dumps(vars(args), indent=2).encode("utf-8"))
+    arg_dict = vars(args).copy()
+    arg_dict.pop("k", None)
+    arg_dict.pop("sigma", None)
+    arg_dict.pop("pruning", None)
+    arg_dict.pop("double_layer", None)
+    arg_dict.pop("single_layer", None)
+    md5.update(json.dumps(arg_dict).encode("utf-8"))
     dig = md5.hexdigest()
     return dig
 
@@ -24,7 +30,7 @@ def save_model(
     base_path = Path(base_path)
     base_path.mkdir(exist_ok=True)
     dig = hash_model(args)
-    model.save(base_path / f"model-{dataset}-{dig}.pkl")
+    model.save_original(base_path / f"model-{dataset}-{dig}.pkl")
 
 
 def load_model(

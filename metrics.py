@@ -171,21 +171,22 @@ def run_metrics(
     prefix = "bc"
     if after_compression:
         print("===== AFTER COMPRESSION =====")
-        prefix = "ac"
+        # prefix = "ac"
     else:
         print("==== BEFORE COMPRESSION ====")
 
     with Timer("Test") as t:
         test_accuracy = model.validate(test_set[0], test_set[1])
-    metric.add(f"{prefix}_test_time", t.get(), "s")
+    metric.add("original", int(not after_compression))
+    metric.add(f"test_time", t.get(), "s")
     print("Test Accuracy = ", test_accuracy)
-    metric.add(f"{prefix}_test_acc", test_accuracy)
-    mem_size = get_mem_size_kb(model)
+    metric.add(f"test_acc", test_accuracy)
+    mem_size = get_mem_size_kb(model.metadata)
     print(f"Memory size: {mem_size} KB")
-    metric.add(f"{prefix}_mem_size", mem_size)
+    metric.add(f"mem_size", mem_size)
     persisted_size = get_persisted_size_kb(model)
     print(f"Persisted size: {persisted_size} KB")
-    metric.add(f"{prefix}_persisted_size", persisted_size)
+    metric.add(f"persisted_size", persisted_size)
     print()
 
 

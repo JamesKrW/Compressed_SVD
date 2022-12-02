@@ -1,11 +1,14 @@
 import argparse
 from datetime import datetime
+from pathlib import Path
 
 import metrics
 import numpy as np
 from dataset import cifar10
 from mlp import MLP
-from utils import save_model
+from utils import hash_model, load_model, save_model
+
+DATASET = "cifar10"
 
 
 @metrics.timing
@@ -26,7 +29,7 @@ def main(args):
     metric = metrics.Metric()
 
     metric.add("time", datetime.now())
-    metric.add("dataset", "cifar")
+    metric.add("dataset", DATASET)
     metric.add("k", args.k)
     metric.add("shape", args.model_shape)
     metric.add("batch_size", args.batch_size)
@@ -35,39 +38,44 @@ def main(args):
     metric.add("l2_lambda", args.l2_lambda)
     metric.add("double_layer", int(not args.single_layer))
     metric.add("pruning", int(args.pruning))
+    metric.add("sigma", args.sigma)
 
-    with metrics.Timer("Training") as t:
-        for epoch in range(epochs):
-            indexes = np.arange(len(X_train))
-            steps = len(X_train) // batch_size
-            np.random.shuffle(indexes)
-            for i in range(steps):
-                ind = indexes[i * batch_size : (i + 1) * batch_size]
-                x = X_train[ind]
-                y = Y_train[ind]
-                loss = model(x, y)
-                model.backward()
+    if not Path(f"./saved/model-{DATASET}-{hash_model(args)}.pkl").exists():
+        with metrics.Timer("Training") as t:
+            for epoch in range(epochs):
+                indexes = np.arange(len(X_train))
+                steps = len(X_train) // batch_size
+                np.random.shuffle(indexes)
+                for i in range(steps):
+                    ind = indexes[i * batch_size : (i + 1) * batch_size]
+                    x = X_train[ind]
+                    y = Y_train[ind]
+                    loss = model(x, y)
+                    model.backward()
 
-                if (i + 1) % 100 == 0:
-                    accuracy = model.validate(valid_set[0], valid_set[1])
-                    print(
-                        "Epoch[{}/{}] \t Step[{}/{}] \t Loss = {:.6f} \t Acc = {:.3f}".format(
-                            epoch + 1,
-                            epochs,
-                            i + 1,
-                            steps,
-                            loss,
-                            accuracy,
+                    if (i + 1) % 100 == 0:
+                        accuracy = model.validate(valid_set[0], valid_set[1])
+                        print(
+                            "Epoch[{}/{}] \t Step[{}/{}] \t Loss = {:.6f} \t Acc = {:.3f}".format(
+                                epoch + 1,
+                                epochs,
+                                i + 1,
+                                steps,
+                                loss,
+                                accuracy,
+                            )
                         )
-                    )
-            model.lr_step()
+                model.lr_step()
 
-    metric.add("train_time", t.get(), "s")
-    save_model(model=model, args=args, dataset="cifar10", base_path="./saved")
+        metric.add("train_time", t.get(), "s")
+        save_model(model=model, args=args, dataset=DATASET, base_path="./saved")
+        metrics.run_metrics(metric, model, test_set, after_compression=False)
+    else:
+        metric.add("train_time", 0, "s")
+        load_model(model, args, dataset=DATASET, base_path="./saved")
 
-    metrics.run_metrics(metric, model, test_set, after_compression=False)
     if args.pruning:
-        model.sigma_pruning()
+        model.sigma_pruning(lambda_=args.sigma)
     model.compress_mlp(k=args.k, double_layer=not args.single_layer)
     metrics.run_metrics(metric, model, test_set, after_compression=True)
 
@@ -86,6 +94,7 @@ parser.add_argument("--data_path", default="./data/cifar-10-binary.tar.gz")
 parser.add_argument("--model_shape", default=[3072, 20, 20, 10], type=list)
 parser.add_argument("--learning_rate", default=0.01, type=float)
 parser.add_argument("--l2_lambda", default=0.00, type=float)
+parser.add_argument("--sigma", default=2.0, type=float)
 parser.add_argument(
     "--pruning",
     help="Enable pruning",
