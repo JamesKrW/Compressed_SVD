@@ -169,6 +169,7 @@ def plot_single_dataset(
                     x=x,
                 )
                 axs[i].legend().set_visible(False)
+                axs[i].set_xlabel("N" if x == "sigma" else "k")
 
             handles, labels = axs[-1].get_legend_handles_labels()
             # order = [2, 0, 1, 3, 4]
