@@ -168,4 +168,5 @@ data/*.gz
 saved/
 # *.csv
 plots/
-plot_data/*.csv
+# plot_data/*.csv
+*_bak

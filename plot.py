@@ -31,11 +31,13 @@ CIFAR10_FILES = [
     "cifar_non_pruned_single_layer.csv",
 ]
 
-ALL_COLORS = ["green", "maroon", "orange", "purple", "black"]
-ALL_MARKERS = ["o", "v", "s", "D", "X"]
+ORIGINAL_COLOR = "green"
+ORIGINAL_MARKER = "o"
+ALL_COLORS = ["maroon", "orange", "purple", "black"]
+ALL_MARKERS = ["v", "s", "D", "X"]
 
-COLOR = cycle(ALL_COLORS[: len(MNIST_FILES)])
-MARKER = cycle(ALL_MARKERS[: len(ALL_MARKERS)])
+# COLOR = cycle(ALL_COLORS[: len(MNIST_FILES) + 1])
+# MARKER = cycle(ALL_MARKERS[: len(ALL_MARKERS) + 1])
 
 
 @ticker.FuncFormatter
@@ -160,16 +162,16 @@ def plot_column(df: pd.DataFrame, y: str, x: str = "k"):
 
 def plot_column_from_dfs(ax: plt.Axes, dfs: List[pd.DataFrame], y: str, x: str = "k"):
     for i, df in enumerate(dfs):
-        if i == 0:
+        if i == len(dfs) - 2:
             df.plot(
                 x=x,
                 y=f"bc_{y}",
                 ax=ax,
-                c=next(COLOR),
+                c=ORIGINAL_COLOR,
                 linestyle="--",
                 label="Original",
-                markersize=1,
-                marker=next(MARKER),
+                markersize=3,
+                marker=ORIGINAL_MARKER,
             )
 
         name = ""
@@ -191,14 +193,14 @@ def plot_column_from_dfs(ax: plt.Axes, dfs: List[pd.DataFrame], y: str, x: str =
             x=x,
             y=f"ac_{y}",
             ax=ax,
-            c=next(COLOR),
-            marker=next(MARKER),
-            markersize=1,
+            c=ALL_COLORS[i],
+            marker=ALL_MARKERS[i],
+            markersize=3,
             label=name,
         )
 
 
-def main(
+def plot_single_dataset(
     dataset: str,
     data_path: str,
     output_path: str,
@@ -229,11 +231,32 @@ def main(
         for i, col in enumerate(COLUMNS):
             axs[i].set_title(COLUMN_HUMANIZE[i])
             plot_column_from_dfs(axs[i], dfs, y=col, x="k")
+            axs[i].legend().set_visible(False)
+
+        handles, labels = axs[-1].get_legend_handles_labels()
+        order = [2, 0, 1, 3, 4]
+        # order = [2, 0, 1]
+        # print(handles, labels)
+        lgd = fig.legend(
+            [handles[idx] for idx in order],
+            [labels[idx] for idx in order],
+            bbox_to_anchor=(0.5, -0.1),
+            loc="lower center",
+            ncol=5,
+        )
+        # lines_labels = [ax.get_legend_handles_labels() for ax in fig.axes]
+        # lines, labels = [sum(lol, []) for lol in zip(*lines_labels)]
+        # fig.legend(lines, labels)
+
+        # fig.tight_layout()
+        # fig.legend(bbox_to_anchor=(1.25, 0.6), loc="center right")
 
         fig.savefig(
             output_path / f"{dataset}_all.{format}",
             format=format,
             dpi=1200,
+            bbox_extra_artists=(lgd,),
+            bbox_inches="tight",
         )
         plt.close(fig)
     else:
@@ -246,6 +269,32 @@ def main(
                 dpi=1200,
             )
             plt.close(fig)
+
+
+def main(
+    dataset: str,
+    data_path: str,
+    output_path: str,
+    format: str = "eps",
+    combine: bool = False,
+):
+    assert dataset in [
+        "mnist",
+        "cifar10",
+        "all",
+    ], "Dataset must be either mnist or cifar10 or all"
+
+    if dataset == "all":
+        plot_single_dataset(
+            "mnist", data_path, output_path, format=format, combine=combine
+        )
+        plot_single_dataset(
+            "cifar10", data_path, output_path, format=format, combine=combine
+        )
+    else:
+        plot_single_dataset(
+            dataset, data_path, output_path, format=format, combine=combine
+        )
 
 
 if __name__ == "__main__":
