@@ -161,6 +161,27 @@ class Metric(object):
             csv_file.close()
 
 
+def run_metrics_original_model(
+    metric: Metric,
+    model: MLP,
+    # test_set: npt.ArrayLike,
+):
+    """Run all the metrics and save them to the given metric object"""
+    # with Timer("Test") as t:
+    #     test_accuracy = model.validate(test_set[0], test_set[1])
+    metric.add("original", 1)
+    # metric.add("test_time", t.get(), "s")
+    # print("Test Accuracy = ", test_accuracy)
+    # metric.add("test_acc", test_accuracy)
+    mem_size = get_mem_size_kb(model.metadata)
+    print(f"Memory size: {mem_size} KB")
+    metric.add("mem_size", mem_size)
+    persisted_size = get_persisted_size_kb(model)
+    print(f"Persisted size: {persisted_size} KB")
+    metric.add("persisted_size", persisted_size)
+    print()
+
+
 def run_metrics(
     metric: Metric,
     model: MLP,
@@ -171,22 +192,22 @@ def run_metrics(
     prefix = "bc"
     if after_compression:
         print("===== AFTER COMPRESSION =====")
-        # prefix = "ac"
+        prefix = "ac"
     else:
         print("==== BEFORE COMPRESSION ====")
 
     with Timer("Test") as t:
         test_accuracy = model.validate(test_set[0], test_set[1])
     metric.add("original", int(not after_compression))
-    metric.add(f"test_time", t.get(), "s")
+    metric.add(f"{prefix}_test_time", t.get(), "s")
     print("Test Accuracy = ", test_accuracy)
-    metric.add(f"test_acc", test_accuracy)
+    metric.add(f"{prefix}_test_acc", test_accuracy)
     mem_size = get_mem_size_kb(model.metadata)
     print(f"Memory size: {mem_size} KB")
-    metric.add(f"mem_size", mem_size)
+    metric.add(f"{prefix}_mem_size", mem_size)
     persisted_size = get_persisted_size_kb(model)
     print(f"Persisted size: {persisted_size} KB")
-    metric.add(f"persisted_size", persisted_size)
+    metric.add(f"{prefix}_persisted_size", persisted_size)
     print()
 
 

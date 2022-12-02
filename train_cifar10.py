@@ -6,7 +6,7 @@ import metrics
 import numpy as np
 from dataset import cifar10
 from mlp import MLP
-from utils import hash_model, load_model, save_model
+from utils import hash_model, save_model
 
 DATASET = "cifar10"
 
@@ -30,15 +30,11 @@ def main(args):
 
     metric.add("time", datetime.now())
     metric.add("dataset", DATASET)
-    metric.add("k", args.k)
     metric.add("shape", args.model_shape)
     metric.add("batch_size", args.batch_size)
     metric.add("lr", args.learning_rate)
     metric.add("epochs", args.epochs)
     metric.add("l2_lambda", args.l2_lambda)
-    metric.add("double_layer", int(not args.single_layer))
-    metric.add("pruning", int(args.pruning))
-    metric.add("sigma", args.sigma)
 
     if not Path(f"./saved/model-{DATASET}-{hash_model(args)}.pkl").exists():
         with metrics.Timer("Training") as t:
@@ -69,21 +65,10 @@ def main(args):
 
         metric.add("train_time", t.get(), "s")
         save_model(model=model, args=args, dataset=DATASET, base_path="./saved")
-        metrics.run_metrics(metric, model, test_set, after_compression=False)
+        metrics.run_metrics_original_model(metric, model)
+        metric.save_to_csv("cifar10_original.csv")
     else:
-        metric.add("train_time", 0, "s")
-        load_model(model, args, dataset=DATASET, base_path="./saved")
-
-    if args.pruning:
-        model.sigma_pruning(lambda_=args.sigma)
-    model.compress_mlp(k=args.k, double_layer=not args.single_layer)
-    metrics.run_metrics(metric, model, test_set, after_compression=True)
-
-    metric.show()
-    pruning_fl = "pruned" if args.pruning else "non_pruned"
-    layer_fl = "single_layer" if args.single_layer else "double_layer"
-    filename = f"cifar_{pruning_fl}_{layer_fl}"
-    metric.save_to_csv(f"{filename}.csv")
+        print("Model already exists, skipping training")
 
 
 parser = argparse.ArgumentParser()
@@ -94,18 +79,6 @@ parser.add_argument("--data_path", default="./data/cifar-10-binary.tar.gz")
 parser.add_argument("--model_shape", default=[3072, 20, 20, 10], type=list)
 parser.add_argument("--learning_rate", default=0.01, type=float)
 parser.add_argument("--l2_lambda", default=0.00, type=float)
-parser.add_argument("--sigma", default=2.0, type=float)
-parser.add_argument(
-    "--pruning",
-    help="Enable pruning",
-    action="store_true",
-)
-parser.add_argument(
-    "--single_layer",
-    help="Enable single layer",
-    action="store_true",
-)
 args = parser.parse_args()
-
 
 main(args)

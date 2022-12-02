@@ -171,3 +171,4 @@ plots/
 # plot_data/*.csv
 *_bak
 plot_data-*
+plot_data/*
