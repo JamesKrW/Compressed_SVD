@@ -1,0 +1,2 @@
+time,dataset,shape,batch_size,lr,epochs,l2_lambda,train_time,original,mem_size,persisted_size
+2022-12-02 03:08:06.954665,mnist,"[784, 20, 20, 10]",32,0.01,60,0.0,124.7317,1,130.0234375,146.2529296875

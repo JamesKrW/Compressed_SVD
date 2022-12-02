@@ -167,8 +167,8 @@ data/*.gz
 .DS_Store
 saved/
 # *.csv
-plots/
+# plots/
 # plot_data/*.csv
 *_bak
 plot_data-*
-plot_data/*
+# plot_data/*

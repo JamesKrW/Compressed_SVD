@@ -1,0 +1,2 @@
+time,dataset,shape,batch_size,lr,epochs,l2_lambda,train_time,original,mem_size,persisted_size
+2022-12-02 03:10:21.590067,cifar10,"[3072, 20, 20, 10]",32,0.01,60,0.0,358.2491,1,487.5234375,554.9287109375
