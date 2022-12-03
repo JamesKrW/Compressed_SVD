@@ -70,16 +70,27 @@ def plot_column_from_dfs(
 
     for i, df in enumerate(dfs):
         if y in ["test_acc", "test_time"] and i == 0:
-            df.plot(
-                x=x,
-                y=f"bc_{y}",
-                ax=ax,
+            avg = df[f"bc_{y}"].max()
+            ax.axhline(
+                avg,
+                # x=x,
+                # ax=ax,
                 c=ORIGINAL_COLOR,
                 linestyle="--",
                 label="Original",
                 markersize=3,
                 marker=ORIGINAL_MARKER,
             )
+            # df.plot(
+            #     x=x,
+            #     y=f"bc_{y}",
+            #     ax=ax,
+            #     c=ORIGINAL_COLOR,
+            #     linestyle="--",
+            #     label="Original",
+            #     markersize=3,
+            #     marker=ORIGINAL_MARKER,
+            # )
 
         name = ""
         if (df["pruning"] == 0).all():
